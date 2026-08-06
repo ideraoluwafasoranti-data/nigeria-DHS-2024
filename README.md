@@ -48,7 +48,7 @@ the report figure (12%).
 ## Methods
 
 **Software:** R
-**Packages:** tidyverse, haven, janitor, survey, ggplot2, gtsummary
+**Packages:** tidyverse, haven, janitor, survey, ggplot2, gtsummary, webshot2
 
 ### Outcome Variables
 - **Wasting** - weight-for-height z-score < -2 SD (stored as HW72 < -200
@@ -267,7 +267,7 @@ nigeria-dhs-2024/
 4. Open `nigeria-dhs-2024.Rproj` in RStudio
 5. Install required packages if needed:
    install.packages(c("tidyverse", "haven", "janitor", 
-                      "survey", "ggplot2", "gtsummary"))
+                      "survey", "ggplot2", "gtsummary", "webshot2"))
 6. Run `scripts/nutrition_analysis.R` from top to bottom
 
 **Important:** DHS microdata cannot be shared publicly under the DHS data access
