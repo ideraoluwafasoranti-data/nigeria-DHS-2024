@@ -118,7 +118,7 @@ in the DHS dataset), secondary outcome
   - Stunting highest in North East (50.4%) and lowest in South East (20.7%)
 
 ### Regression
-**Model 1 - Autonomy predicting MDD: **
+**Model 1 - Autonomy predicts MDD:**
 - Maternal autonomy did not significantly predict MDD after controlling for 
   covariates (p=0.347)
 - Household wealth was the strongest predictor of dietary diversity. Children in
