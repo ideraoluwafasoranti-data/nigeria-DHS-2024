@@ -41,7 +41,7 @@ research purposes
 
 **Sample:** The full KR file contained 27,783 child records. 
 The analytical sample was restricted to 3,100 children aged 6-23 months with 
-resident mothers. Note that our sample includes all children aged 6-23 months 
+resident mothers. Note that this sample includes all children aged 6-23 months 
 in the KR file, while the 2024 NDHS report restricted to the youngest child per 
 mother. This explains the minor difference between our MDD estimate (13%) and 
 the report figure (12%).
