@@ -238,8 +238,6 @@ All outputs are in the `/outputs` folder:
 
 ## Repository Structure
 
-## Repository Structure
-
 ```
 nigeria-dhs-2024/
 ├── .gitignore
