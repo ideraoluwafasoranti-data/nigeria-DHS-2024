@@ -23,9 +23,9 @@ using nationally representative data.
 
 1. Does maternal decision-making autonomy predict minimum dietary diversity 
    among children aged 6-23 months?
-2. Do autonomy and dietary diversity predict wasting after controlling for key 
+2. Do autonomy and dietary diversity predict wasting after controlling for relevant 
    sociodemographic factors?
-3. Do autonomy and dietary diversity predict stunting after controlling for key 
+3. Do autonomy and dietary diversity predict stunting after controlling for relevant 
    sociodemographic factors?
 
 ---
@@ -103,7 +103,7 @@ in the DHS dataset), secondary outcome
 
 ---
 
-## Important Findings
+## Results
 
 ### Descriptive
 - 13% of children met MDD. This is consistent with the 2024 NDHS report 
