@@ -29,6 +29,7 @@ library(janitor)
 library(survey)
 library(ggplot2)
 library(gtsummary)
+library(webshot2)
 
 # ==============================================================================
 # NOTE ON WORKING DIRECTORY
