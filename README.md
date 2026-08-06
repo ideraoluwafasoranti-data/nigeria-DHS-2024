@@ -1,5 +1,4 @@
-# Maternal Autonomy, Dietary Diversity, and Child Wasting and Stunting in 
-# Nigeria: A Survey-Weighted Analysis of the 2024 NDHS
+# Maternal Autonomy, Dietary Diversity, and Child Wasting and Stunting in Nigeria: A Survey-Weighted Analysis of the 2024 NDHS
 
 -----------------------------------------------------------------------------
 
@@ -23,7 +22,7 @@ using nationally representative data.
 ## Research Questions
 
 1. Does maternal decision-making autonomy predict minimum dietary diversity 
-   among children aged 6–23 months?
+   among children aged 6-23 months?
 2. Do autonomy and dietary diversity predict wasting after controlling for key 
    sociodemographic factors?
 3. Do autonomy and dietary diversity predict stunting after controlling for key 
@@ -49,7 +48,7 @@ the report figure (12%).
 ## Methods
 
 **Software:** R
-**Packages:** tidyverse, haven, janitor, survey, ggplot2
+**Packages:** tidyverse, haven, janitor, survey, ggplot2, gtsummary
 
 ### Outcome Variables
 - **Wasting** - weight-for-height z-score < -2 SD (primary outcome)
@@ -237,25 +236,27 @@ All outputs are in the `/outputs` folder:
 
 ## Repository Structure
 
+## Repository Structure
+
+```
 nigeria-dhs-2024/
 ├── .gitignore
+├── README.md
+├── nigeria-dhs-2024.Rproj
 ├── data/
-│   └── README_data.txt  - data access instructions
-│                          DTA files not uploaded
-├── outputs/
-│   ├── table1_descriptive.html
-│   ├── wasting_by_mdd_zone.png
-│   ├── stunting_by_mdd_zone.png
-│   ├── autonomy_by_zone.png
-│   ├── mdd_by_autonomy.png
-│   └── malnutrition_by_autonomy.png
+│   └── README_data.txt
 ├── scripts/
 │   └── nutrition_analysis.R
-├── README.md
-└── nigeria-dhs-2024.Rproj
----
+└── outputs/
+    ├── table1_descriptive.html
+    ├── wasting_by_mdd_zone.png
+    ├── stunting_by_mdd_zone.png
+    ├── autonomy_by_zone.png
+    ├── mdd_by_autonomy.png
+    └── malnutrition_by_autonomy.png
+```
 
-## How to Reproduce
+---
 
 ## How to Reproduce
 
