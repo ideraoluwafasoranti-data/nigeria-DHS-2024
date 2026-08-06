@@ -127,7 +127,7 @@ in the DHS dataset), secondary outcome
 - North East zone had significantly lower MDD than North West even after 
   controlling for autonomy and wealth (p<0.001)
 
-**Model 2 — Autonomy + MDD predicts Wasting:**
+**Model 2 - Autonomy + MDD predicts Wasting:**
 - Neither autonomy nor MDD significantly predicted wasting after controlling for 
   covariates
 - Maternal education was protective, children of mothers with incomplete 
@@ -138,7 +138,7 @@ in the DHS dataset), secondary outcome
 - Girls had significantly lower risk of wasting than boys (p=0.046)
 - Older children within the 6-23 month window had lower risk of wasting (p=0.002)
 
-**Model 3 — Autonomy + MDD predicts Stunting:**
+**Model 3 Autonomy + MDD predicts Stunting:**
 - Neither autonomy nor MDD significantly predicted stunting after controlling 
   for covariates
 - Maternal education was strongly protective across multiple levels. Children of
