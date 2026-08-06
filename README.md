@@ -157,14 +157,14 @@ in the DHS dataset), secondary outcome
 ### A Note on the South South Paradox
 
 One unexpected finding in this analysis was that South South zone had the highest
-maternal autonomy score (0.49) and relatively high dietary diversity, yet also 
+maternal autonomy score (0.49) and high child dietary diversity, yet also 
 had the highest wasting prevalence (19.6%) in the sample. This was also 
 significant in the regression model for wasting.
 
 I do not have a definitive explanation for this finding. It may be as a result 
 of factors beyond diet quality that drive wasting in South South, such as 
 disease burden, water and sanitation conditions, or healthcare access, which 
-this analysis did not capture. It could also be because sample size limitations 
+this analysis did not capture. It could also be because of sample size limitations 
 within the zone. This finding needs further investigation in future research.
 
 This may also explain the counterintuitive positive direction of the autonomy 
