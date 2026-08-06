@@ -51,9 +51,9 @@ the report figure (12%).
 **Packages:** tidyverse, haven, janitor, survey, ggplot2, gtsummary
 
 ### Outcome Variables
-- **Wasting** — weight-for-height z-score < -2 SD (stored as HW72 < -200
+- **Wasting** - weight-for-height z-score < -2 SD (stored as HW72 < -200
 in the DHS dataset), primary outcome
-- **Stunting** — height-for-age z-score < -2 SD (stored as HW70 < -200
+- **Stunting** - height-for-age z-score < -2 SD (stored as HW70 < -200
 in the DHS dataset), secondary outcome
 
 ### Exposure Variables
