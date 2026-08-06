@@ -281,7 +281,7 @@ requested directly from dhsprogram.com.
 
 ## Author
 
-**Ideraoluwa Fasoranti**
+**Ideraoluwa J. Fasoranti**
 Nutrition and Dietetics Graduate | Independent Researcher
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue)]
