@@ -33,9 +33,12 @@ using nationally representative data.
 ## Data
 
 **Source:** 2024 Nigeria Demographic and Health Survey (NDHS)
+
 **Files:** Kids Recode (KR) and Individual Recode (IR). Stata format
-**Access:** Requested and got through dhsprogram.com for academic 
+
+**Access:** Requested and obtained through dhsprogram.com for academic 
 research purposes
+
 **Sample:** The full KR file contained 27,783 child records. 
 The analytical sample was restricted to 3,100 children aged 6-23 months with 
 resident mothers. Note that our sample includes all children aged 6-23 months 
@@ -89,9 +92,9 @@ Survey-weighted logistic regression using the survey package to account for DHS
 complex sampling design. Survey weights are applied to ensure estimates are 
 nationally representative and account for the unequal probability of selection 
 inherent in the DHS sampling design. Three models were estimated:
-- Model 1: Autonomy predicting MDD
-- Model 2: Autonomy + MDD predicting Wasting
-- Model 3: Autonomy + MDD predicting Stunting
+- Model 1: Autonomy predicts MDD
+- Model 2: Autonomy + MDD predicts Wasting
+- Model 3: Autonomy + MDD predicts Stunting
 
 - **Wasting** - weight-for-height z-score < -2 SD (stored as HW72 < -200 
 in the DHS dataset), primary outcome
