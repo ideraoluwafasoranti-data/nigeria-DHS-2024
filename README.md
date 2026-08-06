@@ -226,13 +226,15 @@ I want to be transparent about the limitations of this analysis:
 
 All outputs are in the `/outputs` folder:
 
-1. `table1_descriptive.html` - descriptive statistics table showing sample 
+1. `table1_descriptive.png` — descriptive statistics table showing sample
     characteristics by zone
-2. `wasting_by_mdd_zone.png` - wasting prevalence by MDD status and zone
-3. `stunting_by_mdd_zone.png` - stunting prevalence by MDD status and zone
-4. `autonomy_by_zone.png` - mean maternal autonomy score by zone
-5. `mdd_by_autonomy.png` - MDD prevalence by autonomy category
-6. `malnutrition_by_autonomy.png` - wasting and stunting by autonomy category
+2. `table1_descriptive.html` - descriptive statistics table showing sample 
+    characteristics by zone
+3. `wasting_by_mdd_zone.png` - wasting prevalence by MDD status and zone
+4. `stunting_by_mdd_zone.png` - stunting prevalence by MDD status and zone
+5. `autonomy_by_zone.png` - mean maternal autonomy score by zone
+6. `mdd_by_autonomy.png` - MDD prevalence by autonomy category
+7. `malnutrition_by_autonomy.png` - wasting and stunting by autonomy category
    
 ---
 
@@ -248,6 +250,7 @@ nigeria-dhs-2024/
 ├── scripts/
 │   └── nutrition_analysis.R
 └── outputs/
+    ├── table1_descriptive.png
     ├── table1_descriptive.html
     ├── wasting_by_mdd_zone.png
     ├── stunting_by_mdd_zone.png
