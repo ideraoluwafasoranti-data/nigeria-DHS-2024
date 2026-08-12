@@ -102,19 +102,27 @@ Constructed from four DHS decision-making variables:
 - V743D - who decides on visits to family
 - V743F - who decides on husband's earnings
 
-Each item scored: decides alone = 1, jointly = 0.5, husband or someone else = 0.
-A score of 0 means the husband or someone else makes all decisions. A score 
-of 1 means the woman makes all decisions alone. The composite is the mean of the
-four items. Women were categorised as Low (<0.33), Medium (0.33-0.67), or 
-High (>=0.67) for descriptive purposes. The continuous score was used in 
-regression models.
+Each item scored: 
+- decides alone = 1 (full autonomy)
+- jointly = 0.5 (partial autonomy)
+- husband or someone else = 0 (no autonomy)
+
+A score of 0 means the husband or someone else makes all decisions. A score of 1 means
+the woman makes all decisions alone. The composite is the mean of the four items.
+
+For descriptive purposes, women were categorised as:
+- Low (<0.33)
+- Medium (0.33-0.67)
+- High (>=0.67)
+
+The continuous score was used in regression models.
 
 **WASH Covariates**
 Three household sanitation indicators were included as covariates in 
 Models 2, 3, 5 and 6 to control for the household disease environment:
-- Water source — improved vs unimproved (V113)
-- Toilet type — improved vs unimproved (V116)
-- Stool disposal — safe vs unsafe (V465)
+- Water source - improved vs unimproved (V113)
+- Toilet type - improved vs unimproved (V116)
+- Stool disposal - safe vs unsafe (V465)
 
 **Covariates:** zone, maternal education, urban/rural residence, 
 maternal age group, child sex, child age in months
@@ -194,7 +202,7 @@ Minor differences show the broader sample definition which includes all children
 - Maternal education was protective, children of mothers with incomplete 
   secondary or higher education had significantly lower risk of wasting compared 
   to children of mothers with no education (p<0.05). Older children within the 
-  6–23 month window had lower risks of wasting (p<0.001).
+  6-23 month window had lower risks of wasting (p<0.001).
 - South South zone had significantly higher wasting risk than North West after 
   controlling for all covariates (p=0.015)
 
@@ -210,16 +218,16 @@ Minor differences show the broader sample definition which includes all children
 **Block 2 - MAD:**
 
 **Model 4 - Does autonomy predict MAD?**
-Maternal autonomy did not significantly predict MAD (p=0.739). Household wealth remained 
-the strongest predictor. This is consistent with Model 1.
+- Maternal autonomy did not significantly predict MAD (p=0.739).
+- Household wealth remained the strongest predictor. This is consistent with Model 1.
 
 **Model 5 - Do autonomy, MAD and WASH predict wasting?**
-Neither autonomy (p=0.621) nor MAD (p=0.840) significantly predicted wasting. 
-This is consistent with Model 2.
+- Neither autonomy (p=0.621) nor MAD (p=0.840) significantly predicted wasting. This is 
+ consistent with Model 2.
 
 **Model 6 - Do autonomy, MAD and WASH predict stunting?**
-Neither autonomy (p=0.133) nor MAD (p=0.427) significantly predicted stunting. 
-This is consistent with Model 3.
+- Neither autonomy (p=0.133) nor MAD (p=0.427) significantly predicted stunting. This is
+  consistent with Model 3.
 
 ### Conclusion
 
@@ -227,7 +235,7 @@ Maternal autonomy did not significantly predict child dietary adequacy or malnut
 outcomes in any of the six models, regardless of whether MDD or MAD was used as 
 the dietary indicator.
 
-But household wealth was a dominant and most consistent predictor inall models. 
+But household wealth was a dominant and most consistent predictor in all models. 
 Children in richer households were significantly more likely to meet MDD 
 and MAD regardless of their mother's autonomy level.
 
@@ -236,7 +244,7 @@ The variable most relevant to food-specific autonomy, V743E - who decides what
 food is cooked daily) was not administered in the 2024 Nigeria DHS. Thus, autonomy 
 composite captures general household decision-making rather than food-specific autonomy. 
 
-What we can say with confidence from this analysis is that regardless of a mother's 
+What I can say with confidence from this analysis is that regardless of a mother's 
 general decision-making power, household wealth is the strongest predictor of whether 
 her child receives a diverse and adequate diet. Economic empowerment alongside autonomy 
 interventions may be important for improving child nutrition outcomes in Nigeria.
@@ -262,7 +270,7 @@ structural confounding rather than a true biological relationship.
 
 ---
 
-## Why I Believe AAutonomy Was Not Significant - A Measurement Note
+## Possible Explanation for Null Autonomy Results
 
 The most relevant variable for my research question, and to food-specific 
 autonomy, V743E - who decides what food is cooked daily was not administered in 
@@ -326,9 +334,10 @@ All outputs are in the `/outputs` folder:
     characteristics by zone
 2. `table1_descriptive.html` - descriptive statistics table showing sample 
     characteristics by zone
-3. `mdd_mad_by_zone.png` - MDD and MAD prevalence by zone
-4. `mdd_mad_by_autonomy.png` - MDD and MAD prevalence by autonomy category
-5. `malnutrition_by_autonomy.png` - wasting and stunting by autonomy category
+3. `autonomy_by_zone.png` -  mean maternal autonomy score by zone
+4. `mdd_mad_by_zone.png` - MDD and MAD prevalence by zone
+5. `mdd_mad_by_autonomy.png` - MDD and MAD prevalence by autonomy category
+6. `malnutrition_by_autonomy.png` - wasting and stunting by autonomy category
    
 ---
 
@@ -346,6 +355,7 @@ nigeria-dhs-2024/
 └── outputs/
     ├── table1_descriptive.png
     ├── table1_descriptive.html
+    ├── autonomy_by_zone.png
     ├── mdd_mad_by_zone.png
     ├── mdd_mad_by_autonomy.png
     └── malnutrition_by_autonomy.png
