@@ -524,9 +524,9 @@ table1 %>%
   gt::gtsave("outputs/table1_descriptive.html")
 
 # Save table as PNG for GitHub
-table%>%
-as_gf() %>%
-gt::gtsave("outpits/tables1_descriptive.png")
+table1 %>%
+  as_gt() %>%
+  gt::gtsave("outputs/table1_descriptive.png")
 
 # ==============================================================================
 # STEP 5B: RECODE WASH VARIABLES INTO BINARY CATEGORIES
