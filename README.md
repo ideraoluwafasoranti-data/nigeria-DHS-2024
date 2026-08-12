@@ -229,7 +229,9 @@ Minor differences show the broader sample definition which includes all children
 - Neither autonomy (p=0.133) nor MAD (p=0.427) significantly predicted stunting. This is
   consistent with Model 3.
 
-### Conclusion
+---
+
+## Conclusions
 
 Maternal autonomy did not significantly predict child dietary adequacy or malnutrition 
 outcomes in any of the six models, regardless of whether MDD or MAD was used as 
@@ -268,9 +270,7 @@ coefficient in Model 3, where higher autonomy was weakly associated with higher
 stunting after controlling for other factors. This likely shows the same 
 structural confounding rather than a true biological relationship.
 
----
-
-## Possible Explanation for Null Autonomy Results
+### Possible Explanation for Null Autonomy Results
 
 The most relevant variable for my research question, and to food-specific 
 autonomy, V743E - who decides what food is cooked daily was not administered in 
