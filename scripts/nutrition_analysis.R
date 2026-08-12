@@ -1,12 +1,14 @@
 # ==============================================================================
-# Project: Maternal Autonomy, Dietary Diversity, and Child Wasting and 
-#          Stunting in Nigeria
+# Project: Maternal Autonomy, Child Dietary Adequacy, and 
+#          Malnutrition in Nigeria
 # Data:    2024 Nigeria Demographic and Health Survey (NDHS)
 # Author:  Ideraoluwa Fasoranti
 # Date:    2026
 # Description: Survey-weighted analysis of associations between maternal 
-#       autonomy, minimum dietary diversity, wasting and stunting among children
-#       aged 6-23 months in Nigeria's six geopolitical zones
+#       autonomy, minimum dietary diversity, minimum acceptable diet, wasting 
+#       and stunting among children aged 6-23 months in Nigeria's 
+#       six geopolitical zones. Includes WASH covariates and examines the 
+#       relative contribution of household wealth alongside maternal autonomy.
 # See README.md for full project description and reproduction instructions
 # ==============================================================================
 
@@ -45,93 +47,103 @@ library(webshot2)
 # ==============================================================================
 # I am using two files from the 2024 Nigeria DHS:
 # - KR file (Kids Recode): contains child level data including anthropometry and 
-#   IYCF feeding variables
+#   IYCF feeding variables.
 # - IR file (Individual Recode): contains woman level data including 
-#   decision-making autonomy and background
-# - The two files are linked using caseid. This is a unique
-#   identifier shared by each mother and her children.
+#   decision-making autonomy and background.
+# - The two files are linked using caseid.
+#
+#   col_select loads only the columns needed for this analysis instead of the 
+#   full dataset. This reduces memory usage significantly on low RAM computers.
 # ==============================================================================
 
 # ------------------------------------------------------------------------------
-# 1.1 Load raw Stata files
+# 1.1 Load KR file - child level data
 # ------------------------------------------------------------------------------
-kr_raw <- read_dta("data/NGKR8BFL.DTA")
-ir_raw <- read_dta("data/NGIR8BFL.DTA")
+kr_raw <- read_dta("data/NGKR8BFL.DTA",
+                   col_select = c(caseid, v003, v001, v005, v021, v022,
+                                  hw1, b4, hw70, hw72, v404,
+                                  v414a, v414b, v414c, v414d, v414e, v414f,
+                                  v414g, v414h, v414i, v414j, v414k, v414l,
+                                  v414m, v414n, v414o, v414p, v414v,
+                                  v411, v411a, v413a,
+                                  v113, v116, v465,
+                                  m39, v469e, v469f)) %>%
+  clean_names()
 
 # ------------------------------------------------------------------------------
-# 1.2 Select variables and clean names
+# 1.2 Load IR file - women level data
 # ------------------------------------------------------------------------------
-kr <- kr_raw %>%
-  clean_names () %>%
-  select(
-    caseid, v003, 
-    v001, v005, v021, v022, 
-    hw1, b4, hw70, hw72, v404, v414a, v414b, v414c, v414d, v414e, v414f, v414g,
-    v414h, v414i, v414j, v414k, v414l, v414m, v414n, v414o, v414p, v414v,
-    v411, v411a, v413a
-  )
 
-ir <- ir_raw %>%
-  clean_names() %>%
-  select(
-    caseid,
-    v743a, v743b, v743d, v743f,
-    v739, v149, v190, v024, v025, v013
-  )
+ir_raw <- read_dta("data/NGIR8BFL.DTA",
+                   col_select = c(caseid, v743a, v743b, v743d, v743f,
+                                  v739, v149, v190, v024, v025, v013)) %>%
+  clean_names()
 
 # ------------------------------------------------------------------------------
 # 1.3 Merge
 # ------------------------------------------------------------------------------
-merged <- kr %>%
-  left_join(ir, by = "caseid")
+merged <- kr_raw %>%
+  left_join(ir_raw, by = "caseid")
 
 # ------------------------------------------------------------------------------
 # 1.4 Integrity checks
 # ------------------------------------------------------------------------------
-# A quick check to confirm:
-# - No rows were lost during the merge
-# - The IR autonomy variables joined successfully
 # - About 5% NA on v743a is expected. These are women not currently in union 
-#   who were not asked autonomy questions
-# Merge success rate approximately 95%. This is expected for DHS data where some 
-# women in the IR file do not have corresponding children in the KR file and 
-# viceversa.
-# nrow(merged) should be approximately 27,783.
+#   who were not asked autonomy questions.
+# - nrow(merged) should be approximately 27,783.
 # ------------------------------------------------------------------------------
-nrow(kr)
+nrow(kr_raw)
 nrow(merged)
 mean(is.na(merged$v743a))
-
-glimpse(merged)
+glimpse(merged) 
 
 # ==============================================================================
-# STEP 2: CONSTRUCT MINIMUM DIETARY DIVERSITY (MDD)
+# STEP 2: CONSTRUCT DIETARY INDICATORS 
 # ==============================================================================
-# # MDD constructed following WHO 2021 updated IYCF indicators, threshold is 
-# at least 5 of 8 food groups.
-# MDD is a WHO indicator that tells us whether a child ate a wide enough variety 
-# of foods in the previous day.
-# A child meets MDD if they consumed at least 5 out of 8 defined food groups
-# yesterday.
-# The 8 food groups are:
-# 1. Grains, roots and tubers
-# 2. Legumes and nuts
-# 3. Dairy products
-# 4. Flesh foods (meat, fish, poultry, organ meats)
-# 5. Eggs
-# 6. Vitamin A rich fruits and vegetables
-# 7. Other fruits and vegetables
-# 8. Breast milk
+# I constructed three dietary indicators in this step:
+# MDD, meal frequency and MAD. MDD and MAD are the primary dietary exposures 
+# used in the regression models. Meal frequency is constructed here as a
+# building block for MAD. It is not used as a standalone outcome.
 #
-# The DHS asks about individual food items. I combined the relevant items into 
-# each food group manually, following WHO/UNICEF guidelines.
+# All dietary indicators are constructed on df, the filtered 6-23 month sample,
+# not on merged. This is important because complementary feeding indicators are 
+# only valid for this age range.
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 2.1 Filter to analytical sample first
+# ------------------------------------------------------------------------------
+# Filter to sample to children 6-23 months. WHO and UNICEF recommend this age 
+# range for all complementary feeding indicators, including MDD and MAD.
+# ------------------------------------------------------------------------------
+
+df <- merged %>%
+  filter(hw1 >= 6 & hw1 <= 23)
+
+nrow(df)
+
+# ------------------------------------------------------------------------------
+# 2.2 Construct MDD - Minimum Dietary Diversity
+# ------------------------------------------------------------------------------
+# MDD = 1 if child consumed at least 5 of 8 WHO food groups the previous day. 
+# Food groups are constructed by combining individual DHS food item variables.
+#
+# The 8 food groups are:
+# 1. Grains, roots and tubers - v414e, v414f
+# 2. Legumes and nuts - v414c, v414o
+# 3. Dairy - v411, v411a, v413a, v414p, v414v
+# 4. Flesh foods - v414h, v414m, v414n, v414b, v414d
+# 5. Eggs - v414g
+# 6. Vitamin A rich fruits and vegetables - v414i, v414j, v414k
+# 7. Other fruits and vegetables - v414a, v414l
+# 8. Breast milk - v404
 #
 # Values of 8 (don't know) are treated as not consumed because they fail 
-# the == 1 check. Missing/NA values are handled by the missing = 0 argument 
-# in if_else. This follows standard DHS practice for MDD construction.
-# ==============================================================================
+# the == 1 check. Missing values are handled by the missing = 0 argument in 
+# if_else. Constructed following WHO 2021 updated IYCF indicators.
+# ------------------------------------------------------------------------------
 
-merged <- merged %>%
+df <- df %>%
   mutate(
     # -------------------- 8 food groups ---------------------------
     fg1_grains    = if_else(v414e  == 1 | v414f == 1, 1, 0, missing = 0),
@@ -141,47 +153,81 @@ merged <- merged %>%
     fg4_flesh     = if_else(v414h  == 1 | v414m == 1 | v414n == 1 |
                             v414b  == 1 | v414d == 1, 1, 0, missing = 0),
     fg5_eggs      = if_else(v414g  == 1, 1, 0, missing = 0),
-    fg6_vita      = if_else(v414i  == 1 | v414j == 1 | v414k == 1, 1, 0, missing = 0),
+    fg6_vita      = if_else(v414i  == 1 | v414j == 1 | 
+                             v414k == 1, 1, 0, missing = 0),
     fg7_otherfv   = if_else(v414a  == 1 | v414l == 1, 1, 0, missing = 0),
     fg8_breastmilk = if_else(v404  == 1, 1, 0, missing = 0),
     
-    # ----------------- Total food groups consumed ---------------------
-    food_group_count = fg1_grains + fg2_legumes + fg3_dairy + fg4_flesh +
-      fg5_eggs + fg6_vita + fg7_otherfv + fg8_breastmilk,
-    
-    # ------------ MDD: 1 if >=5 food groups ---------------------
-    mdd = if_else(food_group_count >= 5, 1, 0)
+    mdd = if_else(fg1_grains + fg2_legumes + fg3_dairy +
+                    fg4_flesh + fg5_eggs + fg6_vita +
+                    fg7_otherfv + fg8_breastmilk >= 5, 1, 0)
   )
 
-# ---------------------- Check ---------------------------
-table(merged$mdd, useNA = "always")
-mean(merged$mdd, na.rm  = TRUE)
-
-# Note: food_group_count is the continuous version of dietary diversity, the 
-# total number of food groups consumed. It was constructed here but not included
-# in the regression models. Binary MDD was used instead for consistency with 
-# WHO/UNICEF reporting standards. Future analyses should examine whether the 
-# continuous score produces stronger associations than the binary indicator. 
-# This is acknowledged in the limitations.
-
-# ------------------------------------------------------------------------------
-# 2.2 Filter to analytical sample - children 6 - 23 months
-# ------------------------------------------------------------------------------
-df <- merged %>%
-  filter(hw1 >= 6 & hw1 <= 23) 
-
-#Confirm sample size
-nrow(df)
-
-# Confirm MDD in analytical sample
 mean(df$mdd, na.rm = TRUE)
 
-# Note: MDD estimate here is slightly higher than the NDHS final report figure. 
-# This is because the DHS report restricted the sample to "youngest children age
-# 6 - 23 months living with their mother" while this sample includes 
-# all children age 6 - 23 months in the KR file.
-# This minor difference is expected and does not affect the validity of 
-# this analysis.
+# ------------------------------------------------------------------------------
+# 2.3 Construct meal frequency and milk feeds from m39, v469e and v469f
+#-------------------------------------------------------------------------------
+# M39 captures number of times child ate solid semi-solid or soft food the 
+# previous day.
+# V469E captures times child was given powdered/tinned/fresh milk, this is used 
+# for non-breastfed MAD threshold.
+# V469F captures times child was given infant formula, this is used for 
+# non-breastfed MAD threshold.
+# Values of 8 (don't know) and 9 (missing) set to NA.
+# ------------------------------------------------------------------------------
+
+df <- df %>%
+  mutate(
+    meal_freq = case_when(
+      as.numeric(m39) == 8 ~ NA_real_,
+      as.numeric(m39) == 9 ~ NA_real_,
+      TRUE ~ as.numeric(m39)
+    ),
+    milk_feeds = case_when(
+      as.numeric(v469e) == 8 ~ NA_real_,
+      as.numeric(v469e) == 9 ~ NA_real_,
+      as.numeric(v469f) == 8 ~ NA_real_,
+      as.numeric(v469f) == 9 ~ NA_real_,
+      TRUE ~ as.numeric(v469e) + as.numeric(v469f)
+    )
+  )
+
+# Check distributions
+table(df$meal_freq, useNA = "always")
+table(df$milk_feeds, useNA = "always")
+
+# ------------------------------------------------------------------------------
+# 2.4 Construct MAD - Minimum Acceptable Diet
+# ------------------------------------------------------------------------------
+# Minimum Acceptable Diet combines dietary diversity and meal frequency.
+# 
+# Breastfed children: MDD >= 5 AND meal frequency >= 2
+# Non-breastfed children: MDD >= 5 AND meal frequency >= 3
+#
+# MAD is a more complete IYCF indicator than MDD alone as it combines both 
+# diet quality and feeding frequency.
+# WHO recommends MAD as the primary complementary feeding indicator 
+# alongside MDD.
+# Constructed following WHO 2021 updated IYCF indicators.
+# ------------------------------------------------------------------------------
+
+df <- df %>%
+  mutate(
+    mad = case_when(
+      v404 == 1 & mdd == 1 & meal_freq >= 2 ~ 1,
+      v404 == 1 & (mdd == 0 | meal_freq < 2) ~ 0,
+      v404 == 0 & mdd == 1 & meal_freq >= 3 &
+        milk_feeds >= 2 ~ 1,
+      v404 == 0 & (mdd == 0 | meal_freq < 3 |
+                     milk_feeds < 2) ~ 0,
+      TRUE ~ NA_real_
+    )
+  )
+
+# Check MAD distribution
+table(df$mad, useNA = "always")
+mean(df$mad, na.rm = TRUE)
 
 # ==============================================================================
 # STEP 3: CONSTRUCT WASTING VARIABLE (PRIMARY OUTCOME)
@@ -196,15 +242,12 @@ mean(df$mdd, na.rm = TRUE)
 # As such, The wasting cutoff is HW72 < -200, not HW72 < -2
 #
 # Flagged and implausible values (codes >= 9996) are set to NA and excluded from 
-# the analysis. These include:
-# - 9996: height out of plausible limits
-# - 9997: age in days out of plausible limits
-# - 9998: flagged cases
-# - 9999: missing
+# the analysis. 
 #
 # I also used as.numeric() first to strip the haven labelled format from the 
 # Stata file before applying the cleaning logic.
 # ==============================================================================
+
 df <- df%>%
   mutate(
     # Set flagged values to NA
@@ -221,12 +264,6 @@ df <- df%>%
 table(df$wasting, useNA = "always")
 mean(df$wasting, na.rm  = TRUE)
 
-# Note: Wasting prevalence among children 6 - 23 months is higher than the 
-# national under-5 figure reported in the 2024 NDHS. The report confirms wasting 
-# is most prevalent in 6 - 11 month age group. The restricted age sample in this 
-# analysis captures this high risk window, so a higher estimate is consistent
-# with NDHS findings.
-
 # ==============================================================================
 # STEP 3B: CONSTRUCT STUNTING VARIABLE (SECONDARY OUTCOME)
 # ==============================================================================
@@ -239,12 +276,6 @@ mean(df$wasting, na.rm  = TRUE)
 # - Stunting cutoff is HW70 < -200
 # - Flagged values (>= 9996) are set to NA
 # - as.numeric() used first to strip haven labels
-#
-# Stunting indicates chronic undernutrition accumulated over time. It is a 
-# secondary outcome in this analysis since IYCF practices are more immediately
-# linked to acute malnutrition (wasting).
-# Including stunting also allows me to compare whether the autonomy-diet pathway 
-# operates differently for acute vs chronic malnutrition.
 # ==============================================================================
 
 df <- df%>%
@@ -264,15 +295,9 @@ summary(df$hw70_clean)
 table(df$stunting, useNA = "always")
 mean(df$stunting, na.rm  = TRUE)
 
-# Note: Stunting prevalence among children 6 - 23 months is slightly lower than  
-# the national under-5 figure reported in the 2024 NDHS. The report confirms  
-# stunting accumulates with age and peaks at 36 - 47 months. This sample of
-# children aged 6-23 months captures children before stunting fully accumulates, 
-# so a lower estimate is consistent with published final report.
-
 # ==============================================================================
 # STEP 4: CONSTRUCT MATERNAL AUTONOMY COMPOSITE SCORE
-# =========================================================
+# ==============================================================================
 # I constructed a composite autonomy score from four DHS decision-making 
 # variables asking who usually makes decisions in the following areas:
 # - V743A: respondent's own healthcare
@@ -285,24 +310,16 @@ mean(df$stunting, na.rm  = TRUE)
 # - Joint decision = 0.5 (partial autonomy)
 # - Husband or someone else decides = 0 (no autonomy)
 #
-# The composite score is the mean of the four items, ranging from 0 to 1. 
-# Women were then categorised as:
-# - Low autonomy: score < 0.33
-# - Medium autonomy: score 0.33 to 0.67
-# - High autonomy: score >= 0.67
+# The composite is the mean of the four items
+# ranging from 0 (no autonomy) to 1 (full autonomy).
 #
-# Two variables were excluded from the composite:
+# Two variables were excluded:
+# - V739: only asked of employed women - 45% missing
+# - V743E: not administered in 2024 Nigeria DHS
 #
-# V739 (who decides how to spend respondent's own money) was excluded because it 
-# was only asked of women with personal earnings, resulting in 45% missing data.
-# Including it would have biased the score toward employed women only. 
-# This was confirmed by checking the Nigeria 2024 DHS questionnaire which shows 
-# the question is conditional on the woman having earnings.
-#
-# V743E (who decides what food is cooked daily) was not administered in the 2024 
-# Nigeria DHS. It was marked NA in the MAP file. This was the most relevant
-# variable for my research question and its absence is acknowledged as 
-# a key limitation.
+# V743E - who decides what food is cooked daily. This was the most relevant 
+# variable for this research question. Its absence is the primary limitation of 
+# this analysis and is discussed further in the README.
 # ==============================================================================
 
 df <-  df %>%
@@ -335,15 +352,12 @@ df <-  df %>%
       v743f %in% c(4, 5, 6) ~ 0,
       TRUE ~ NA_real_
     ),
-    
-    # ------------Composite score: average of 5 autonomy items ----------------
-    # Range: 0 (no autonomy) to 1 (full autonomy)
     autonomy_score = rowMeans(
       cbind(aut_a, aut_b, aut_d, aut_f), 
       na.rm = TRUE
     ),
     
-    # ------------ Categorise into low/medium/high autonomy ----------------
+    # ------------ Categorise into low/medium/high autonomy ---------------- #
     autonomy_cat = case_when(
       autonomy_score < 0.33 ~ "Low",
       autonomy_score < 0.67 ~ "Medium",
@@ -353,22 +367,9 @@ df <-  df %>%
   )
 # ------------------- Check -----------------------------
 summary(df$autonomy_score)
+mean(df$autonomy_score, na.rm = TRUE)
 table(df$autonomy_cat, useNA = "always")
 
-# Note: The Low/Medium/High autonomy category thresholds (0.33 and 0.67) divide 
-# the 0-1 scale into approximate thirds. These are analytical categories created 
-# fordescriptive purposes. The continuous autonomy score is used in regression 
-# models to preserve statistical power and avoid information loss 
-# from categorisation.
-
-# Individual autonomy variable distributions were compared against Table 15.8 of 
-# the 2024 NDHS final report for v743a, v743b and v743d. Results were
-# consistent with published figures. Minor differences show this sample of 
-# mothers of children aged 6-23 months who tend to be younger and have
-# slightly less autonomy than all married women.
-# v743f could not be validated as it was not published in the report. Its 
-# validity is inferred from the accuracy of the three validated variables.
- 
 # ==============================================================================
 # STEP 5: DESCRIPTIVE STATISTICS BY ZONE
 # ==============================================================================
@@ -377,24 +378,17 @@ table(df$autonomy_cat, useNA = "always")
 # applied here so the estimates are nationally representative.
 #
 # Zones are coded as:
-# 1 = North West
-# 2 = North East
-# 3 = North Central
-# 4 = South East
-# 5 = South South
-# 6 = South West
+# 1 = North West            2 = North East                     3 = North Central
+# 4 = South East            5 = South South                    6 = South West
 # ==============================================================================
 
 # ------------------------------------------------------------------------------
 # 5.1 Define survey design object
 # ------------------------------------------------------------------------------
-# Before computing any weighted estimates I need to tell R about the complex 
-# sampling structure of the DHS. This ensures all estimates properly account for
+# Before computing any weighted estimates I need to tell R the DHS uses a 
+# complex sampling design. This ensures all estimates properly account for
 # clustering, stratification and probability weights. 
-# DHS uses complex sampling, must account for:
-# v021 = clustering - primary sampling unit (PSU)
-# v022 = strata
-# v005 = probability weights (divide by 1,000,000 per DHS convention)
+# Probability weights are divide by 1,000,000 per DHS convention.
 # ------------------------------------------------------------------------------
 
 dhs_design <- svydesign(
@@ -408,45 +402,40 @@ dhs_design <- svydesign(
 # ------------------------------------------------------------------------------
 # 5.2 Wasting prevalence by zone
 # ------------------------------------------------------------------------------
-# Weighted wasting prevalence for each of the six geopolitical zones. This gives 
-# a picture of where acute malnutrition is most concentrated before running any 
-# regression models.
-# ------------------------------------------------------------------------------
+
 svyby(~wasting, ~v024, dhs_design, svymean, na.rm = TRUE)
 
 # ------------------------------------------------------------------------------
 # 5.3 MDD prevalence by zone 
 # ------------------------------------------------------------------------------
-# Weighted MDD prevalence by zone. Comparing this to the wasting map helps
-# see whether zones with lower dietary diversity also have higher wasting, which
-# would support the research hypothesis.
-# ------------------------------------------------------------------------------
+
 svyby(~mdd, ~v024, dhs_design, svymean, na.rm = TRUE)
 
 # ------------------------------------------------------------------------------
-# 5.4 Mean autonomy score by zone
+# 5.4 MAD prevalence by zone
 # ------------------------------------------------------------------------------
-# Weighted mean autonomy score by zone. This shows how maternal decision-making 
-# power varies across Nigeria's geopolitical zones before formally
-# testing its relationship with diet and malnutrition.
+
+svyby(~mad, ~v024, dhs_design, svymean, na.rm = TRUE)
+
 # ------------------------------------------------------------------------------
+# 5.5 Mean autonomy score by zone
+# ------------------------------------------------------------------------------
+
 svyby(~autonomy_score, ~v024, dhs_design, svymean, na.rm = TRUE)
 
 # ------------------------------------------------------------------------------
-# 5.5 Stunting prevalence by zone
+# 5.6 Stunting prevalence by zone
 # ------------------------------------------------------------------------------
-# Added to complement the wasting estimates. Stunting shows a clearer 
-# North-South gradient than wasting, which is consistent with the cumulative 
-# nature of chronic undernutrition and known regional disparities in Nigeria.
-# ------------------------------------------------------------------------------
+
 svyby(~stunting, ~v024, dhs_design, svymean, na.rm = TRUE)
 
 # ------------------------------------------------------------------------------
-# 5.6 Descriptive statistics table
+# 5.7 Descriptive statistics table
 # ------------------------------------------------------------------------------
-# A summary table showing key sample characteristics by zone. This gives readers
-# a clear picture of the analytical sample before interpreting any regression
-# results.
+# A summary table showing sample characteristics by zone.
+# MAD and meal frequency are included alongside MDD to give a complete picture 
+# of dietary adequacy.
+# Saved as HTML to outputs folder.
 # ------------------------------------------------------------------------------
 
 # Prepare labelled data for table
@@ -468,6 +457,9 @@ df_table <- df %>%
                             labels = c("No","Yes")),
     mdd_label      = factor(mdd, 
                             levels = c(0,1), 
+                            labels = c("No","Yes")),
+    mad_label      = factor(mad,
+                            levels = c(0,1),
                             labels = c("No","Yes")),
     autonomy_cat   = factor(autonomy_cat,
                             levels = c("Low","Medium","High")),
@@ -494,7 +486,7 @@ df_table <- df %>%
 
 # Build table
 table1 <- df_table %>%
-  select(zone, wasting_label, stunting_label, mdd_label,
+  select(zone, wasting_label, stunting_label, mdd_label, mad_label,
          autonomy_cat, autonomy_score, hw1, sex,
          residence, education, wealth) %>%
   tbl_summary(
@@ -503,6 +495,7 @@ table1 <- df_table %>%
       wasting_label  ~ "Wasting",
       stunting_label ~ "Stunting",
       mdd_label      ~ "Met MDD",
+      mad_label      ~ "Met MAD",
       autonomy_cat   ~ "Autonomy category",
       autonomy_score ~ "Autonomy score (mean)",
       hw1            ~ "Child age in months",
@@ -530,61 +523,99 @@ table1 %>%
   as_gt() %>%
   gt::gtsave("outputs/table1_descriptive.html")
 
-# Important findings: 
-# 1. Autonomy and MDD follow the same North-South gradient, both
-#    lowest in the North West/North East  and highest in South South/South West
-# 2. South West has highest MDD and lowest wasting. This is consistent with the 
-#    autonomy diet wasting pathway
-# 3. South South has highest autonomy but also highest wasting, this suggests 
-#    other factors beyond diet quality in the zone.This is discussed further 
-#    in the README.
-# 4. Stunting prevalence zone patterns are consistent with national 
-#    distributions, with Northern zones showing higher stunting burden than 
-#    Southern zones.
-# 5. Autonomy is low in this sample, which is consistent with Nigeria's 
-#    patriarchal household structure and findings from the 2024 NDHS women's
-#    empowerment module.
-# 6. Stunting prevalence in this 6-23 month sample is lower than the national 
-#    under-5 figure (40%) reported in the 2024 NDHS. This is expected because 
-#    the report confirms stunting increases with age, peaking at 36-47 months. 
+# Save table as PNG for GitHub
+table%>%
+as_gf() %>%
+gt::gtsave("outpits/tables1_descriptive.png")
+
+# ==============================================================================
+# STEP 5B: RECODE WASH VARIABLES INTO BINARY CATEGORIES
+# ==============================================================================
+# Three WASH variables are included as covariates in Models 2, 3, 5 and 6 to 
+# control for the household disease environment. Unsafe water, poor sanitation
+# and unhygienic stool disposal increase infection and diarrhea risk which 
+# independently drive wasting and stunting regardless of diet quality.
+#
+# This recoding must happen BEFORE Step 6 factor conversion. Recoding after 
+# factor conversion fails because as.integer() no longer returns original DHS
+# numeric codes after conversion, producing mostly NA.
+#
+# Improved water sources (coded 1):
+# Piped water, boreholes, protected wells and springs, rainwater, 
+# packaged water (codes 11-14, 21, 31, 41, 51, 71, 72)
+#
+# Improved toilet facilities (coded 1):
+# Flush toilet, ventilated improved pit latrine, composting 
+# toilet (codes 11, 12, 21, 22, 41)
+#
+# Safe stool disposal (coded 1):
+# Disposed in toilet or buried (codes 1, 2)
+# ==============================================================================
+
+df <- df %>%
+  mutate(
+    water_improved = case_when(
+      as.numeric(v113) %in% c(11,12,13,14,21,31,
+                              41,51,71,72) ~ 1,
+      as.numeric(v113) %in% c(32,42,43,61,
+                              62,96) ~ 0,
+      TRUE ~ NA_real_
+    ),
+    toilet_improved = case_when(
+      as.numeric(v116) %in% c(11,12,21,22,41) ~ 1,
+      as.numeric(v116) %in% c(13,14,15,23,31,
+                              42,43,96) ~ 0,
+      TRUE ~ NA_real_
+    ),
+    stool_safe = case_when(
+      as.numeric(v465) %in% c(1,2) ~ 1,
+      as.numeric(v465) %in% c(3,4,5,6,7,
+                              8,9,96) ~ 0,
+      TRUE ~ NA_real_
+    )
+  )
+
+# Check distributions
+table(df$water_improved, useNA = "always")
+table(df$toilet_improved, useNA = "always")
+table(df$stool_safe, useNA = "always")
 
 # ==============================================================================
 # ANALYTICAL APPROACH FOR REGRESSION MODELS
 # ==============================================================================
-# I estimated three survey-weighted logistic regression models to examine the 
-# research questions. All models use the svyglm function from the survey package
-# with quasibinomial family to account for the DHS complex sampling design.
+# I estimated six survey-weighted regression models organised in two blocks: 
+# one using MDD and one using MAD as the dietary indicator. This allows me to 
+# compare whether the autonomy-nutrition pathway holds regardless
+# of how dietary adequacy is measured.
 #
-# The three models are:
+# All models use svyglm with quasibinomial family to account for the DHS 
+# complex sampling design.
 #
-# Model 1 (Step 6): Does maternal autonomy predict dietary diversity?
-# Outcome: MDD
-# This model tests whether women with more household decision-making power are 
-# more likely to feed their children a diverse diet.
+# BLOCK 1 - MDD as dietary indicator:
+# Model 1: Does autonomy predict MDD?
+# Model 2: Do autonomy, MDD and WASH predict wasting?
+# Model 3: Do autonomy, MDD and WASH predict stunting?
 #
-# Model 2 (Step 7): Do autonomy and dietary diversity predict wasting?
-# Outcome: Wasting (primary outcome)
-# This model tests whether the autonomy-diet pathway results in better 
-# acute nutritional outcomes. Wasting is the primary outcome of this analysis
-# because it shows recent feeding adequacy and is most directly linked to IYCF
-# practices in the 6-23 month window.
+# BLOCK 2 - MAD as dietary indicator:
+# Model 4: Does autonomy predict MAD?
+# Model 5: Do autonomy, MAD and WASH predict wasting?
+# Model 6: Do autonomy, MAD and WASH predict stunting?
 #
-# Model 3 (Step 7): Do autonomy and dietary diversity predict stunting?
-# Outcome: Stunting (secondary)
-# This model tests the same pathway for chronic malnutrition to see whether the 
-# relationship is different for acute vs chronic undernutrition.
+# Covariates in all models:
+# Zone, maternal education, wealth index, urban/rural residence, 
+# maternal age group
 #
-# These three models follow:
-# autonomy --> dietary diversity --> child malnutrition
+# Additional covariates in Models 2, 3, 5 and 6:
+# Child sex, child age in months, water source, toilet type, stool disposal
+#
+# A secondary aim is to examine the relative contribution of household wealth 
+# compared to maternal autonomy in predicting child dietary adequacy and 
+# malnutrition outcomes, given existing evidence that economic resources may 
+# constrain what autonomy can achieve in low-income settings.
 # ==============================================================================
 
 # ==============================================================================
-# STEP 6: SURVEY-WEIGHTED LOGISTIC REGRESSION - MODEL 1
-# Does maternal autonomy predict dietary diversity?
-# Outcome: MDD (binary - met/not met)
-# Main predictor: autonomy composite score
-# Covariates: zone, maternal education, wealth index, urban/rural residence, 
-#             maternal age group
+# STEP 6: FACTOR CONVERSION AND SURVEY DESIGN
 # ==============================================================================
 
 # ------------------------------------------------------------------------------
@@ -598,7 +629,7 @@ table1 %>%
 # Direct conversion using as.factor() or as_factor() from haven failed because 
 # variables retained their Stata dbl+lbl format. The fix was to use as.integer()
 # first to strip the haven attributes completely, then as.factor() to convert 
-# to a proper R factor.
+# properly.
 # ------------------------------------------------------------------------------
 
 df$v024     <-  as.factor(as.integer(df$v024))
@@ -610,15 +641,12 @@ df$b4       <-  as.factor(as.integer(df$b4))
 df$mdd      <-  as.factor(as.integer(df$mdd))
 df$stunting <-  as.factor(as.integer(df$stunting))
 df$wasting  <-  as.factor(as.integer(df$wasting))
-
-# Verify conversion
-class(df$v024)
-levels(df$v024)
-class(df$stunting)
-levels(df$stunting)
+df$water_improved  <- as.factor(df$water_improved)
+df$toilet_improved <- as.factor(df$toilet_improved)
+df$stool_safe      <- as.factor(df$stool_safe)
 
 # ------------------------------------------------------------------------------
-# 6.2 Update survey design with corrected factors
+# 6.2 Rebuild survey design with corrected factors
 # ------------------------------------------------------------------------------
 # The survey design object must be rebuilt after factor conversion so it uses 
 # the updated factor variables. This makes sure all regression estimates are 
@@ -627,7 +655,6 @@ levels(df$stunting)
 # - clustering (PSU = v021)
 # - Stratification (v022)
 # - Probability weights (v005 divided by 1,000,000)
-# All estimates must account for this design to be nationally representative
 # ------------------------------------------------------------------------------
 
 dhs_design <- svydesign(
@@ -641,11 +668,6 @@ dhs_design <- svydesign(
 # ------------------------------------------------------------------------------
 # 6.3 Run Model 1 - Autonomy predicts MDD
 # ------------------------------------------------------------------------------
-# quasibinomial family is used instead of binomial because it handles survey 
-# weighted data better and accounts for overdispersion without requiring integer
-# counts. This is standard practice for survey weighted logistic 
-# regression in DHS analyses.
-# ------------------------------------------------------------------------------
 
 model1 <- svyglm(
   mdd ~ autonomy_score + v024 + v149 +v190 + v025 + v013,
@@ -655,53 +677,27 @@ model1 <- svyglm(
 
 summary(model1)
 
-# Model 1: Autonomy does not significantly predict MDD after controlling for 
-# covariates. Household wealth is the strongest predictor of dietary 
-# diversity. This suggests that even when mothers have decision-making power, 
-# financial resources are the constraint on what they can actually feed their 
-# children. 
-# North East zone had significantly lower MDD than North West even after 
-# controlling for autonomy and wealth.
-
 # ==============================================================================
 # STEP 7: SURVEY-WEIGHTED LOGISTIC REGRESSION
+# BLOCK 1 CONTINUED - Models 2 and 3
+# BLOCK 2 - Models 4, 5 and 6 
 # ==============================================================================
-# Models 2 and 3
-# Does autonomy combined with dietary diversity predict child 
-# malnutrition outcomes?
-#
-# Model 2 outcome: Wasting (primary outcome)
-# Model 3 outcome: Stunting (secondary outcome)
-#
-# Main predictors: autonomy composite score, MDD
-# Covariates: zone, maternal education, wealth index, urban/rural residence,
-#             maternal age group, sex of child, child's age in months
-# 
-# Sex of child and child's age are added as additional covariates in these 
-# models because wasting and stunting risk vary by age and sex within the
-# 6-23 month window. This is standard controls in child nutrition 
-# regression models. 
+
+# ==============================================================================
+# BLOCK 1 CONTINUED - MDD AS DIETARY INDICATOR
 # ==============================================================================
 
 # ------------------------------------------------------------------------------
-# 7.1 Convert wasting to factor
+# 7.1 Confirm factor conversion for wasting and stunting.
+# Already converted in Step 6 but confirmed here before running Models 2 and 3.
 # ------------------------------------------------------------------------------
-# Wasting needs to be converted to factor separately here because it was 
-# constructed as numeric in Step 3 and needs to be a binary factor for the 
-# logistic regression model.
-# ------------------------------------------------------------------------------
-df$wasting <- as.factor(as.integer(df$wasting))
-
-# Verify
-class(df$wasting)
-levels(df$wasting)
+df$wasting  <- as.factor(as.integer(df$wasting))
+df$stunting <- as.factor(as.integer(df$stunting))
 
 # ------------------------------------------------------------------------------
-# 7.2 Update survey design
+# 7.2 Rebuild survey design
 # ------------------------------------------------------------------------------
-# Survey design object rebuilt to include wasting as a factor variable alongside 
-# the other covariates already converted in Step 6.
-# ------------------------------------------------------------------------------
+
 dhs_design <- svydesign(
   id       = ~v021,
   strata   = ~v022,
@@ -711,305 +707,286 @@ dhs_design <- svydesign(
 )
 
 # ------------------------------------------------------------------------------
-# 7.3 Run Model 2 - Autonomy + MDD predicts Wasting
+# 7.3 Run Model 2 - Do autonomy, MDD and WASH predict wasting?
 # ------------------------------------------------------------------------------
+# WASH covariates are included to control for the household disease environment 
+# which independently drives wasting through infection and diarrhea.
+# ------------------------------------------------------------------------------
+
 model2 <-  svyglm(
-  wasting ~ autonomy_score + mdd + v024 + v149 + v190 + v025 + v013 + b4 + hw1,
+  wasting ~ autonomy_score + mdd + v024 + v149 + 
+            v190 + v025 + v013 + b4 + hw1 +
+            water_improved + toilet_improved + stool_safe,
   design = dhs_design,
   family = quasibinomial(link = "logit")
 )
 
 summary(model2)
 
-# Model 2: Neither Autonomy nor MDD significantly predict MDD after controlling 
-# for covariates. Significant predictors: maternal education (protective),
-# South South zone (higher risk), female sex (lower risk), child's age
-# (older = lower risk within 6 - 23 months).
-# The null finding for autonomy and MDD may be because wasting is driven by acute
-# illness and infection which this analysis did not capture. 
-# This is acknowledged as a limitation.
-
 # ------------------------------------------------------------------------------
-# 7.4 Run Model 3 - Autonomy + MDD predicts Stunting
+# 7.4 Run Model 3 - Do autonomy, MDD and WASH predict stunting?
+# ------------------------------------------------------------------------------
+# Stunting shows chronic undernutrition accumulated over time. It was included 
+# as secondary outcome to compare whether the autonomy-diet pathway differs for
+# acute vs chronic malnutrition.
 # ------------------------------------------------------------------------------
 model3 <- svyglm(
-  stunting ~ autonomy_score + mdd + v024 + v149 + v190 + v025 + v013 + b4 + hw1,
+  stunting ~ autonomy_score + mdd + v024 + v149 +
+    v190 + v025 + v013 + b4 + hw1 +
+    water_improved + toilet_improved + stool_safe,
   design = dhs_design,
   family = quasibinomial(link = "logit")
 )
 
 summary(model3)
 
-# Model 3: Autonomy and MDD do not significantly predict stunting.
-# Key protective factors: maternal education, older maternal age, higher wealth, 
-# South zone residence, female sex.
-# Child age positively predicts stunting, this is consistent with cumulative 
-# nature of chronic undernutrition.
-# The counterintuitive positive direction of the autonomy coefficient may be as 
-# a result of structural confounding. This is discussed further in the README 
-# under the South South paradox section.
+# ==============================================================================
+# BLOCK 2 - MAD AS DIETARY INDICATOR
+# ==============================================================================
+# MAD is a more complete IYCF indicator than MDD. It combines dietary diversity
+# and meal frequency. 
+# Block 2 mirrors Block 1 exactly but uses MAD instead of MDD 
+# as the dietary exposure.
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 7.5 Run Model 4 - Does autonomy predict MAD?
+# ------------------------------------------------------------------------------
+model4 <- svyglm(
+  mad ~ autonomy_score + v024 + v149 +
+    v190 + v025 + v013,
+  design = dhs_design,
+  family = quasibinomial(link = "logit")
+)
+
+summary(model4)
+
+# ------------------------------------------------------------------------------
+# 7.6 Run Model 5 - Do autonomy, MAD and WASH predict wasting?
+# ------------------------------------------------------------------------------
+
+model5 <- svyglm(
+  wasting ~ autonomy_score + mad + v024 + v149 +
+    v190 + v025 + v013 + b4 + hw1 +
+    water_improved + toilet_improved + stool_safe,
+  design = dhs_design,
+  family = quasibinomial(link = "logit")
+)
+
+summary(model5)
+
+# ------------------------------------------------------------------------------
+# 7.7 Run Model 6 - Do autonomy, MAD and WASH predict stunting?
+# ------------------------------------------------------------------------------
+model6 <- svyglm(
+  stunting ~ autonomy_score + mad + v024 + v149 +
+    v190 + v025 + v013 + b4 + hw1 +
+    water_improved + toilet_improved + stool_safe,
+  design = dhs_design,
+  family = quasibinomial(link = "logit")
+)
+
+summary(model6)
 
 # ==============================================================================
 # STEP 8: VISUALIZATION
 # ==============================================================================
-# Wasting and Stunting prevalence by MDD status and Zone
-# I created five charts to tell the visual story of this analysis. The charts 
-# are saved as PNG files in the outputs folder at 300 DPI for good print quality.
+# Four charts that tell the visual story of this analysis in a logical sequence:
+# 1. Where is autonomy lowest across zones?
+# 2. Where is dietary adequacy lowest across zones?
+# 3. Does autonomy relate to dietary adequacy?
+# 4. Does autonomy relate to malnutrition outcomes?
 #
-# The charts follow this narrative order:
-# 1. Where is autonomy lowest? (autonomy by zone)
-# 2. Does low autonomy mean poor diet? (MDD by autonomy)
-# 3. Does poor diet mean more malnutrition?
-#    (wasting and stunting by autonomy)
-# 4. Does MDD status change wasting by zone?
-#    (wasting by MDD and zone)
-# 5. Does MDD status change stunting by zone?
-#    (stunting by MDD and zone)
+# Charts are saved as PNG files at 300 DPI in the outputs folder.
 # ==============================================================================
 
- library(ggplot2)
- 
-# Create outputs folder if it does not already exist
- dir.create("outputs", showWarnings = FALSE)
+dir.create("outputs", showWarnings = FALSE)
 
 # ------------------------------------------------------------------------------
 # 8.1 Prepare data for plotting
 # ------------------------------------------------------------------------------
-# I summarised wasting and stunting prevalence by zone and MDD status from the 
-# analytical dataset. These are unweighted prevalence figures used for 
-# visualization purposes only. All formal estimates use survey weights
-# in Steps 5, 6 and 7.
+# Zone labels and autonomy categories added for readable chart axes. MDD and MAD
+# converted back to numeric for calculating prevalence.
 # ------------------------------------------------------------------------------
+
 plot_data <- df %>%
   mutate(
-    zone = case_when(
+    zone_label = case_when(
       v024 == 1 ~ "North West",
       v024 == 2 ~ "North East",
       v024 == 3 ~ "North Central",
       v024 == 4 ~ "South East",
       v024 == 5 ~ "South South",
       v024 == 6 ~ "South West"
-    ), 
-    mdd_label = case_when(
-      mdd == 1 ~ "Met MDD",
-      mdd == 0 ~ "Did Not Meet MDD"
     ),
-    wasting = as.numeric(as.character(wasting)),
-    stunting = as.numeric(as.character(stunting))
-  ) %>%
-  filter(!is.na(zone) & !is.na(mdd_label)) %>%
-  group_by(zone, mdd_label) %>%
-  summarise(
-    wasting_prev  = mean(wasting, na.rm  = TRUE) * 100,
-    stunting_prev = mean(stunting, na.rm = TRUE) * 100,
-    .groups = "drop"
-  )
-nrow(plot_data)
-head(plot_data)
-
-# ------------------------------------------------------------------------------
-# 8.2 Plot - Wasting prevalence by MDD status and Zone
-# ------------------------------------------------------------------------------
-# This chart shows whether children who met MDD had lower wasting prevalence 
-# than those who did not, in each geopolitical zone.
-# ------------------------------------------------------------------------------
-
-library(ggplot2)
-ggplot(plot_data, aes(x = zone, y = wasting_prev, fill = mdd_label)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  scale_fill_manual(values = c("Met MDD" = "#2166ac",
-                               "Did Not Meet MDD" = "#d73027")) +
-  labs(
-    title    = "Wasting Prevalence by Dietary Diversity Status and Zone",
-    subtitle = "Children 6-23 months, Nigeria 2024 DHS",
-    x        = "Geopolitical Zone",
-    y        = "Wasting Prevalence (%)",
-    fill     = "MDD Status",
-    caption  = "Source: 2024 Nigeria Demographic and Health Survey"
-  ) +
-  theme_minimal() +
-  theme(
-    plot.title      = element_text(face  = "bold", size = 11),
-    axis.text.x     = element_text(angle = 45, hjust = 1),
-    legend.position = "bottom"
+    mdd_num     = as.numeric(as.character(mdd)),
+    mad_num     = as.numeric(as.character(mad)),
+    wasting_num = as.numeric(as.character(wasting)),
+    stunting_num = as.numeric(as.character(stunting))
   )
 
-# Save plot
-ggsave("outputs/wasting_by_mdd_zone.png", 
-       width = 10, height = 6, dpi = 300)
+# ------------------------------------------------------------------------------
+# 8.2 Autonomy by zone
+# ------------------------------------------------------------------------------
+# Zones ordered from lowest to highest autonomy score. Color gradient reinforces
+# the direction.
+# ------------------------------------------------------------------------------
 
-# ------------------------------------------------------------------------------
-# 8.3 Plot - Stunting prevalence by MDD status and Zone
-# ------------------------------------------------------------------------------
-# Same as 8.2 but for stunting, which is the secondary outcome. Comparing the 
-# two charts helps us see whether the MDD-malnutrition relationship differs for
-# acute vs chronic undernutrition across zones.
-# ------------------------------------------------------------------------------
-library(ggplot2)
-ggplot(plot_data, aes(x = zone, y = stunting_prev, fill = mdd_label)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  scale_fill_manual(values = c("Met MDD"          = "#2166ac",
-                               "Did Not Meet MDD" = "#d73027")) +
-  labs(
-    title    = "Stunting Prevalence by Dietary Diversity Status and Zone",
-    subtitle = "Children 6-23 months, Nigeria 2024 DHS",
-    x        = "Geopolitical Zone",
-    y        = "Stunting Prevalence (%)",
-    fill     = "MDD Status",
-    caption  = "Source: 2024 Nigeria Demographic and Health Survey"
-  ) +
-  theme_minimal() +
-  theme(
-    plot.title      = element_text(face = "bold", size = 11),
-    axis.text.x     = element_text(angle = 45, hjust = 1),
-    legend.position = "bottom"
-  )
+autonomy_plot <- plot_data %>%
+  group_by(zone_label) %>%
+  summarise(mean_autonomy = mean(autonomy_score,
+                                 na.rm = TRUE),
+            .groups = "drop")
 
-# Save plot
-ggsave("outputs/stunting_by_mdd_zone.png", 
-       width = 10, height = 6, dpi = 300)
-
-# ------------------------------------------------------------------------------
-# 8.4 Plot — Mean Autonomy Score by Zone
-# ------------------------------------------------------------------------------
-# This chart shows the North-South autonomy gradient clearly. The zones are 
-# ordered from lowest to highest autonomy score. The color gradient shows the
-# direction of the relationship.
-# ------------------------------------------------------------------------------
-autonomy_zone <- df %>%
-  mutate(
-    zone = case_when(
-      v024 == 1 ~ "North West",
-      v024 == 2 ~ "North East",
-      v024 == 3 ~ "North Central",
-      v024 == 4 ~ "South East",
-      v024 == 5 ~ "South South",
-      v024 == 6 ~ "South West"
-    )
-  ) %>%
-  filter(!is.na(zone)) %>%
-  group_by(zone) %>%
-  summarise(
-    mean_autonomy = mean(autonomy_score, na.rm = TRUE),
-    .groups = "drop"
-  )
-
-ggplot(autonomy_zone, aes(x = reorder(zone, mean_autonomy), y = mean_autonomy, 
-                          fill = mean_autonomy)) +
+ggplot(autonomy_plot,
+       aes(x = reorder(zone_label, mean_autonomy),
+           y = mean_autonomy,
+           fill = mean_autonomy)) +
   geom_bar(stat = "identity") +
-  scale_fill_gradient(low = "#d73027", high = "#2166ac") +
+  scale_fill_gradient(low = "#E74C3C",
+                      high = "#2ECC71") +
   labs(
-    title    = "Mean Maternal Autonomy Score by Geopolitical Zone",
-    subtitle = "Children 6-23 months, Nigeria 2024 DHS",
-    x        = "Geopolitical Zone",
-    y        = "Mean Autonomy Score (0-1)",
-    caption  = "Source: 2024 Nigeria Demographic and Health Survey"
+    title = "Mean Maternal Autonomy Score by Zone",
+    subtitle = "2024 Nigeria Demographic and Health Survey",
+    x = "Geopolitical Zone",
+    y = "Mean Autonomy Score (0-1)",
+    fill = "Autonomy"
   ) +
   theme_minimal() +
-  theme(
-    plot.title      = element_text(face  = "bold", size = 11),
-    axis.text.x     = element_text(angle = 45, hjust = 1),
-    legend.position = "none"
-  )
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(face = "bold"))
 
 ggsave("outputs/autonomy_by_zone.png",
        width = 10, height = 6, dpi = 300)
 
 # ------------------------------------------------------------------------------
-# 8.5 Plot - MDD Prevalence by Autonomy Category
+# # 8.3 MDD and MAD prevalence by zone
 # ------------------------------------------------------------------------------
-# This chart shows whether higher autonomy is associated with better dietary 
-# diversity descriptively, before the formal regression in Model 1.
+# Both dietary indicators shown side by side by zone. This allows comparison of 
+# dietary adequacy patterns across zones using both indicators simultaneously.
 # ------------------------------------------------------------------------------
-mdd_autonomy <- df %>%
-  filter(!is.na(autonomy_cat)) %>%
-  mutate(
-    mdd_num = as.numeric(as.character(mdd))
-  ) %>%
-  group_by(autonomy_cat) %>%
-  summarise(
-    mdd_prev = mean(mdd_num, na.rm = TRUE) * 100,
-    .groups  = "drop"
-  ) %>%
-  mutate(
-    autonomy_cat = factor(autonomy_cat, 
-                          levels = c("Low", "Medium", "High"))
-  )
 
-ggplot(mdd_autonomy, aes(x = autonomy_cat, y = mdd_prev, fill = autonomy_cat)) +
-  geom_bar(stat = "identity") +
-  scale_fill_manual(values = c("Low"    = "#d73027",
-                               "Medium" = "#fee090",
-                               "High"   = "#2166ac")) +
+diet_zone_plot <- plot_data %>%
+  group_by(zone_label) %>%
+  summarise(
+    MDD = mean(mdd_num, na.rm = TRUE) * 100,
+    MAD = mean(mad_num, na.rm = TRUE) * 100,
+    .groups = "drop"
+  ) %>%
+  pivot_longer(cols = c(MDD, MAD),
+               names_to = "Indicator",
+               values_to = "Prevalence")
+
+ggplot(diet_zone_plot,
+       aes(x = reorder(zone_label, Prevalence),
+           y = Prevalence,
+           fill = Indicator)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_manual(values = c("#3498DB", "#2ECC71")) +
   labs(
-    title    = "MDD Prevalence by Maternal Autonomy Category",
-    subtitle = "Children 6-23 months, Nigeria 2024 DHS",
-    x        = "Autonomy Category",
-    y        = "MDD Prevalence (%)",
-    caption  = "Source: 2024 Nigeria Demographic and Health Survey"
+    title = "MDD and MAD Prevalence by Zone",
+    subtitle = "2024 Nigeria Demographic and Health Survey",
+    x = "Geopolitical Zone",
+    y = "Prevalence (%)",
+    fill = "Indicator"
   ) +
   theme_minimal() +
-  theme(
-    plot.title = element_text(face = "bold", size = 11),
-    legend.position = "none"
-  )
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(face = "bold"))
 
-ggsave("outputs/mdd_by_autonomy.png",
+ggsave("outputs/mdd_mad_by_zone.png",
        width = 10, height = 6, dpi = 300)
 
 # ------------------------------------------------------------------------------
-# 8.6 Plot — Wasting and Stunting by Autonomy Category
+# 8.4 MDD and MAD prevalence by autonomy category
 # ------------------------------------------------------------------------------
-# This chart shows whether higher autonomy is associated with lower malnutrition 
-# prevalence descriptively, before the formal regression in Models 2 and 3.
-# Both outcomes are shown side by side for easy comparison.
+# Shows whether higher autonomy is associated with better dietary adequacy 
+# descriptively, before the formal regression in Models 1 and 4.
+# Both indicators shown side by side for comparison.
 # ------------------------------------------------------------------------------
-malnutrition_autonomy <- df %>%
+
+diet_autonomy_plot <- plot_data %>%
   filter(!is.na(autonomy_cat)) %>%
-  mutate(
-    wasting_num  = as.numeric(as.character(wasting)),
-    stunting_num = as.numeric(as.character(stunting))
+  group_by(autonomy_cat) %>%
+  summarise(
+    MDD = mean(mdd_num, na.rm = TRUE) * 100,
+    MAD = mean(mad_num, na.rm = TRUE) * 100,
+    .groups = "drop"
   ) %>%
+  pivot_longer(cols = c(MDD, MAD),
+               names_to = "Indicator",
+               values_to = "Prevalence") %>%
+  mutate(autonomy_cat = factor(autonomy_cat,
+                               levels = c("Low",
+                                          "Medium",
+                                          "High")))
+
+ggplot(diet_autonomy_plot,
+       aes(x = autonomy_cat,
+           y = Prevalence,
+           fill = Indicator)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_fill_manual(values = c("#3498DB", "#2ECC71")) +
+  labs(
+    title = "MDD and MAD Prevalence by Autonomy Category",
+    subtitle = "2024 Nigeria Demographic and Health Survey",
+    x = "Autonomy Category",
+    y = "Prevalence (%)",
+    fill = "Indicator"
+  ) +
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold"))
+
+ggsave("outputs/mdd_mad_by_autonomy.png",
+       width = 8, height = 6, dpi = 300)
+
+# ------------------------------------------------------------------------------
+# 8.5 Wasting and stunting by autonomy category
+# ------------------------------------------------------------------------------
+# Shows whether higher autonomy is associated with lower malnutrition prevalence
+# descriptively, before the formal regression in Models 2, 3, 5 and 6.
+# Both outcomes shown side by side for easy comparison.
+# ------------------------------------------------------------------------------
+
+malnutrition_plot <- plot_data %>%
+  filter(!is.na(autonomy_cat)) %>%
   group_by(autonomy_cat) %>%
   summarise(
     Wasting  = mean(wasting_num, na.rm = TRUE) * 100,
     Stunting = mean(stunting_num, na.rm = TRUE) * 100,
-    .groups  = "drop"
+    .groups = "drop"
   ) %>%
-  mutate(
-    autonomy_cat = factor(autonomy_cat,
-                          levels = c("Low", "Medium", "High"))
-  ) %>%
-  pivot_longer(cols      = c(Wasting, Stunting),
-               names_to  = "outcome",
-               values_to = "prevalence")
+  pivot_longer(cols = c(Wasting, Stunting),
+               names_to = "Outcome",
+               values_to = "Prevalence") %>%
+  mutate(autonomy_cat = factor(autonomy_cat,
+                               levels = c("Low",
+                                          "Medium",
+                                          "High")))
 
-ggplot(malnutrition_autonomy, aes(x = autonomy_cat, y = prevalence,
-                                  fill = outcome)) +
+ggplot(malnutrition_plot,
+       aes(x = autonomy_cat,
+           y = Prevalence,
+           fill = Outcome)) +
   geom_bar(stat = "identity", position = "dodge") +
-  scale_fill_manual(values = c("Wasting"  = "#d73027",
-                               "Stunting" = "#2166ac")) +
+  scale_fill_manual(values = c("#E74C3C", "#3498DB")) +
   labs(
-    title    = "Wasting and Stunting Prevalence by Maternal Autonomy Category",
-    subtitle = "Children 6-23 months, Nigeria 2024 DHS",
-    x        = "Autonomy Category",
-    y        = "Prevalence (%)",
-    fill     = "Outcome",
-    caption  = "Source: 2024 Nigeria Demographic and Health Survey"
+    title = "Wasting and Stunting by Autonomy Category",
+    subtitle = "2024 Nigeria Demographic and Health Survey",
+    x = "Autonomy Category",
+    y = "Prevalence (%)",
+    fill = "Outcome"
   ) +
   theme_minimal() +
-  theme(
-    plot.title = element_text(face = "bold", size = 11),
-    legend.position = "bottom"
-  )
+  theme(plot.title = element_text(face = "bold"))
 
 ggsave("outputs/malnutrition_by_autonomy.png",
-       width = 10, height = 6, dpi = 300)
+       width = 8, height = 6, dpi = 300)
 
-# =========================================================
+# ==============================================================================
 # SESSION INFO
-# =========================================================
+# ==============================================================================
 # R version and package versions used in this analysis are recorded here for 
 # reproducibility purposes.
-# =========================================================
+# ==============================================================================
 sessionInfo()
