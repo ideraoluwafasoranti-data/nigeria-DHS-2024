@@ -1,4 +1,4 @@
-# Maternal Autonomy, Dietary Diversity, and Child Wasting and Stunting in Nigeria: A Survey-Weighted Analysis of the 2024 NDHS
+# Maternal Autonomy, Child Dietary Adequacy, and  Malnutrition in Nigeria: A Survey-Weighted Analysis of the 2024 DHS
 
 -----------------------------------------------------------------------------
 
@@ -8,7 +8,10 @@ This is an independent secondary data analysis I conducted using the 2024
 Nigeria Demographic and Health Survey (NDHS). 
 The project looks at whether maternal decision-making autonomy and dietary 
 diversity are associated with wasting and stunting among children aged 6-23 
-months in Nigeria's six geopolitical zones.
+months in Nigeria's six geopolitical zones. A secondary aim is to examine the 
+relative contribution of household wealth compared to maternal autonomy, given 
+existing evidence that economic resources may constrain what autonomy can achieve in 
+low-income settings.
 
 My interest in this topic comes from my background in community 
 nutrition and working with mothers in Ibadan, Oyo State during my National 
@@ -21,12 +24,17 @@ using nationally representative data.
 
 ## Research Questions
 
-1. Does maternal decision-making autonomy predict minimum dietary diversity 
+1. Does maternal decision-making autonomy predict minimum dietary diversity (MDD)
    among children aged 6-23 months?
-2. Do autonomy and dietary diversity predict wasting after controlling for relevant 
-   sociodemographic factors?
-3. Do autonomy and dietary diversity predict stunting after controlling for relevant 
-   sociodemographic factors?
+2. Does maternal decision-making autonomy predict minimum acceptable diet (MAD)?
+3. Do autonomy, MDD and WASH predict wasting and stunting after controlling for
+   relevant sociodemographic factors?
+4. Do autonomy, MAD and WASH predict wasting and stunting after controlling for
+   relevant sociodemographic factors?
+
+**Secondary aim:** To examine the relative contribution of household wealth
+compared to maternal autonomy in predicting child dietary adequacy and malnutrition 
+outcomes in Nigeria.
 
 ---
 
@@ -45,6 +53,10 @@ resident mothers. Note that this sample includes all children aged 6-23 months
 in the KR file, while the 2024 NDHS report restricted to the youngest child per 
 mother. This explains the minor difference between the MDD estimate (13%) here and 
 the NDHS report figure (12%).
+
+**Ethics:** Data was obtained under the DHS Program data access agreement and used
+strictly for academic research purposes. No individual or household can be identified 
+from the data used in this analysis.
 
 ---
 
@@ -70,6 +82,19 @@ groups the previous day. The 8 groups are: breast milk; grains roots and tubers;
 legumes and nuts; dairy; flesh foods; eggs; vitamin A rich fruits and 
 vegetables; other fruits and vegetables.
 
+**Minimum Acceptable Diet (MAD)**
+A more complete IYCF indicator than MDD alone. MAD combines dietary diversity and 
+meal frequency:
+- Breastfed children: MDD >= 5 food groups AND meal frequency >= 2
+- Non-breastfed children: MDD >= 5 food groups AND meal frequency ≥ 3 AND
+  milk feeds >= 2
+
+Note: Milk feed variables (V469E and V469F) are only administered to 
+non-breastfeeding children in the DHS. Since most children in this sample 
+were breastfed, MAD estimates for non-breastfed children are based on a 
+small subsample and should be interpreted cautiously.
+MAD was constructed following WHO 2021 updated IYCF indicators.
+
 **Maternal Autonomy Composite Score**
 Constructed from four DHS decision-making variables:
 - V743A - who decides on respondent's healthcare
@@ -84,17 +109,40 @@ four items. Women were categorised as Low (<0.33), Medium (0.33-0.67), or
 High (>=0.67) for descriptive purposes. The continuous score was used in 
 regression models.
 
-**Covariates:** zone, maternal education, wealth index, urban/rural residence, 
+**WASH Covariates**
+Three household sanitation indicators were included as covariates in 
+Models 2, 3, 5 and 6 to control for the household disease environment:
+- Water source — improved vs unimproved (V113)
+- Toilet type — improved vs unimproved (V116)
+- Stool disposal — safe vs unsafe (V465)
+
+**Covariates:** zone, maternal education, urban/rural residence, 
 maternal age group, child sex, child age in months
+
+**Key covariate of interest:** Household wealth index (DHS wealth quintiles 1-5). 
+This was included as a covariate in all models and examined for its relative 
+contribution alongside autonomy as part of the secondary aim.
 
 ### Statistical Approach
 Survey-weighted logistic regression using the survey package to account for DHS 
 complex sampling design. Survey weights are applied to ensure estimates are 
 nationally representative and account for the unequal probability of selection 
-inherent in the DHS sampling design. Three models were estimated:
-- Model 1: Autonomy predicts MDD
-- Model 2: Autonomy + MDD predicts Wasting
-- Model 3: Autonomy + MDD predicts Stunting
+inherent in the DHS sampling design. 
+Six models were estimated:
+Six models were estimated in two blocks:
+
+**Block 1 - MDD as dietary indicator:**
+- Model 1: Does autonomy predict MDD?
+- Model 2: Do autonomy, MDD and WASH predict wasting?
+- Model 3: Do autonomy, MDD and WASH predict stunting?
+
+**Block 2 - MAD as dietary indicator:**
+- Model 4: Does autonomy predict MAD?
+- Model 5: Do autonomy, MAD and WASH predict wasting?
+- Model 6: Do autonomy, MAD and WASH predict stunting?
+
+Using both MDD and MAD allows comparison of whether the autonomy-nutrition 
+pathway holds regardless of how dietary adequacy is measured.
 
 - **Wasting** - weight-for-height z-score < -2 SD (stored as HW72 < -200 
 in the DHS dataset), primary outcome
@@ -105,23 +153,33 @@ in the DHS dataset), secondary outcome
 
 ## Results
 
+### Validation
+The prevalence estimates were compared against the 2024 NDHS final report. 
+MDD (13% vs report 12%), wasting (14.2% vs report 17% for 6-11 months) and 
+stunting (34% vs report 40% for under-5) are consistent with published figures. 
+Minor differences show the broader sample definition which includes all children 
+6-23 months rather than the youngest child per mother only.
+
 ### Descriptive
-- 13% of children met MDD. This is consistent with the 2024 NDHS report 
-  figure of 12%
+- 13% of children met MDD and 7.7% met MAD. MAD is lower as expected since it
+  is a stricter combined indicator requiring both dietary diversity and adequate 
+  meal frequency.
 - Wasting prevalence was 14.2%. This is higher than the national under-5 average 
-  (8%), which is expected because wasting peaks in the 6–11 month age group
+  (8%), which is expected because wasting peaks in the 6-11 month age group
 - Stunting prevalence was 34%. This is slightly lower than the national under-5 
   average (40%) because stunting accumulates with age and peaks later
 - Only 5% of mothers had high autonomy. 49% fell in the low autonomy category
-- Both autonomy and MDD followed a clear North-South gradient. Lowest in the 
-  North, highest in the South
+- A clear North-South gradient. Lowest in the North, highest in the South
   - Autonomy lowest in North West (0.16) and highest in South South (0.49)
   - MDD lowest in North East (2.9%) and highest in South West (25.1%)
+  - MAD lowest in North East (1.5%) and highest in South South (11.0%)
   - Wasting highest in South South (19.6%) and lowest in South West (12.0%)
   - Stunting highest in North East (50.4%) and lowest in South East (20.7%)
 
+**Block 1 - MDD:**
+
 ### Regression
-**Model 1 - Autonomy predicts MDD:**
+**Model 1 - Does autonomy predicts MDD?:**
 - Maternal autonomy did not significantly predict MDD after controlling for 
   covariates (p=0.347)
 - Household wealth was the strongest predictor of dietary diversity. Children in
@@ -130,42 +188,72 @@ in the DHS dataset), secondary outcome
 - North East zone had significantly lower MDD than North West even after 
   controlling for autonomy and wealth (p<0.001)
 
-**Model 2 - Autonomy + MDD predicts Wasting:**
-- Neither autonomy nor MDD significantly predicted wasting after controlling for 
-  covariates
+**Model 2 - Do autonomy, MDD and WASH predict wasting?:**
+- Neither autonomy (p=0.827) nor MDD (p=0.409) significantly predicted wasting
+  after controlling for covariates. WASH variables were also not significant.
 - Maternal education was protective, children of mothers with incomplete 
   secondary or higher education had significantly lower risk of wasting compared 
-  to children of mothers with no education (p<0.05)
+  to children of mothers with no education (p<0.05). Older children within the 
+  6–23 month window had lower risks of wasting (p<0.001).
 - South South zone had significantly higher wasting risk than North West after 
-  controlling for all covariates (p=0.044)
-- Girls had significantly lower risk of wasting than boys (p=0.046)
-- Older children within the 6-23 month window had lower risk of wasting (p=0.002)
+  controlling for all covariates (p=0.015)
 
-**Model 3 Autonomy + MDD predicts Stunting:**
-- Neither autonomy nor MDD significantly predicted stunting after controlling 
-  for covariates
-- Maternal education was strongly protective across multiple levels. Children of
-  mothers with higher education had significantly lower risk of stunting (p<0.001)
-- Older maternal age was protective, mothers aged 20 and above had 
-  significantly lower risk of having a stunted child compared to 
-  teenage mothers (p<0.05)
+**Model 3 - Do autonomy, MDD and WASH predict stunting?:**
+- Neither autonomy (p=0.147) nor MDD (p=0.095) significantly predicted stunting
+  after controlling for covariates. WASH variables were not significant.
+- Maternal education was strongly protective across multiple levels (p<0.001)
 - Household wealth was protective at the highest quintile (p<0.001)
 - Girls had significantly lower risk of stunting than boys (p<0.001)
 - Child age positively predicted stunting. This is consistent with the 
   cumulative nature of chronic undernutrition (p<0.001)
+
+**Block 2 - MAD:**
+
+**Model 4 - Does autonomy predict MAD?**
+Maternal autonomy did not significantly predict MAD (p=0.739). Household wealth remained 
+the strongest predictor. This is consistent with Model 1.
+
+**Model 5 - Do autonomy, MAD and WASH predict wasting?**
+Neither autonomy (p=0.621) nor MAD (p=0.840) significantly predicted wasting. 
+This is consistent with Model 2.
+
+**Model 6 - Do autonomy, MAD and WASH predict stunting?**
+Neither autonomy (p=0.133) nor MAD (p=0.427) significantly predicted stunting. 
+This is consistent with Model 3.
+
+### Conclusion
+
+Maternal autonomy did not significantly predict child dietary adequacy or malnutrition 
+outcomes in any of the six models, regardless of whether MDD or MAD was used as 
+the dietary indicator.
+
+But household wealth was a dominant and most consistent predictor inall models. 
+Children in richer households were significantly more likely to meet MDD 
+and MAD regardless of their mother's autonomy level.
+
+These findings should be interpreted because of a key measurement limitation. 
+The variable most relevant to food-specific autonomy, V743E - who decides what 
+food is cooked daily) was not administered in the 2024 Nigeria DHS. Thus, autonomy 
+composite captures general household decision-making rather than food-specific autonomy. 
+
+What we can say with confidence from this analysis is that regardless of a mother's 
+general decision-making power, household wealth is the strongest predictor of whether 
+her child receives a diverse and adequate diet. Economic empowerment alongside autonomy 
+interventions may be important for improving child nutrition outcomes in Nigeria.
 
 ### A Note on the South South Paradox
 
 One unexpected finding in this analysis was that South South zone had the highest
 maternal autonomy score (0.49) and high child dietary diversity, yet also 
 had the highest wasting prevalence (19.6%) in the sample. This was also 
-significant in the regression model for wasting.
+significant in the regression model for wasting, even after controlling for WASH 
+indicators, maternal education, wealth and other sociodemographic factors
 
 I do not have a definitive explanation for this finding. It may be as a result 
 of factors beyond diet quality that drive wasting in South South, such as 
-disease burden, water and sanitation conditions, or healthcare access, which 
-this analysis did not capture. It could also be because of sample size limitations 
-within the zone. This finding needs further investigation in future research.
+acute illness burden, healthcare access, or other unmeasured factors specific 
+to South South, which this analysis did not capture. This finding needs further 
+investigation in future research.
 
 This may also explain the counterintuitive positive direction of the autonomy 
 coefficient in Model 3, where higher autonomy was weakly associated with higher 
@@ -174,36 +262,43 @@ structural confounding rather than a true biological relationship.
 
 ---
 
+## Why I Believe AAutonomy Was Not Significant - A Measurement Note
+
+The most relevant variable for my research question, and to food-specific 
+autonomy, V743E - who decides what food is cooked daily was not administered in 
+the 2024 Nigeria DHS. The autonomy composite captures general household 
+decision-making rather than food-specific autonomy, which limits my ability to 
+properly test the autonomy-IYCF pathway.
+It is possible that food-specific autonomy would show significant associations 
+with child dietary adequacy and malnutrition outcomes that general household autonomy 
+could not detect.
+
+Reinstating V743E in future Nigeria DHS surveys and collecting primary data with 
+food-specific autonomy instruments would enable more direct testing of this 
+pathway.
+
+---
+
 ## Limitations
 
 I want to be transparent about the limitations of this analysis:
 
 - **Key variable not administered:** V743E: who decides what food is cooked 
-  daily, was not administered in the 2024 Nigeria DHS. This was the most 
-  directly relevant autonomy variable for my research question. The composite 
+  daily, was not administered in the 2024 Nigeria DHS. The composite 
   uses four general household decision variables as proxies.
 
 - **V739 excluded:** Who decides how to spend the respondent's own money was 
   excluded from the composite due to 45% missingness. This variable was only 
-  asked of women with personal earnings This makes it unrepresentative of 
+  asked of women with personal earnings, which makes it unrepresentative of 
   the full sample.
 
-- **Continuous dietary diversity not examined:** MDD was used as a binary 
-  indicator. The continuous food group count score was constructed but not 
-  included in regression models. Future analyses should examine whether a 
-  continuous score produces stronger associations with malnutrition outcomes.
+- **MAD for non-breastfed children:** Milk feed variables (V469E and V469F) are only 
+  administered to non-breastfeeding children in the DHS. Since most children in our
+  sample were breastfed, MAD estimates for non-breastfed children are based on a small 
+  subsample and should be interpreted cautiously.
 
-- **Unhealthy food consumption not examined:** The 2024 Nigeria DHS contains 
-  variables on consumption of unhealthy foods (V414R, V414T, V414W, V413C, 
-  V413D, V409A). Constructing an unhealthy food consumption indicator alongside 
-  MDD would provide a more complete picture of diet quality.
-
-- **WASH variables:** I attempted to include water source and toilet type as 
-  covariates but encountered incompatibility issues during recoding after factor 
-  conversion. Future analyses should incorporate WASH indicators properly.
-
-- **MDD is a single-day recall:** It captures what a child ate yesterday, 
-  which may not show habitual feeding patterns.
+- **MDD and MAD are single-day recall indicators:** 
+  They capture what a child ate yesterday which may not show habitual feeding patterns.
 
 - **Cross-sectional design:** This analysis cannot establish causality.
 
@@ -211,17 +306,15 @@ I want to be transparent about the limitations of this analysis:
 
 ## What I Would Do Differently
 
-- Include WASH indicators properly from the start
-- Use Minimum Acceptable Diet (MAD) alongside MDD
-- Apply a formal mediation framework to test whether MDD mediates the 
-  autonomy-malnutrition pathway
-- Investigate the South South paradox. High autonomy and dietary diversity 
-  but also the highest wasting prevalence in the sample
-- Construct an unhealthy food consumption indicator using available DHS 
-  variables (V414R, V414T, V414W, V413C, V413D, V409A) to examine whether 
-  unhealthy food consumption modifies the autonomy-malnutrition relationship
-- Use the continuous food group count score alongside binary MDD in 
-  regression models
+- Use food-specific autonomy measures, especially V743E if reinstated in future
+  DHS surveys, or collect primary data using validated food-specific 
+  autonomy instruments.
+- Incorporate household food security measures which was not available in this dataset.
+- Apply a formal mediation framework to test whether dietary diversity mediates the
+  autonomy-malnutrition pathway.
+- Investigate the South South paradox further using mixed methods or qualitative approaches.
+- Extend the analysis to older age groups to examine whether the autonomy-nutrition pathway
+  operates differently beyond the 6–23 month complementary feeding window.
 
 ---
 
@@ -229,15 +322,13 @@ I want to be transparent about the limitations of this analysis:
 
 All outputs are in the `/outputs` folder:
 
-1. `table1_descriptive.png` — descriptive statistics table showing sample
+1. `table1_descriptive.png` - descriptive statistics table showing sample
     characteristics by zone
 2. `table1_descriptive.html` - descriptive statistics table showing sample 
     characteristics by zone
-3. `wasting_by_mdd_zone.png` - wasting prevalence by MDD status and zone
-4. `stunting_by_mdd_zone.png` - stunting prevalence by MDD status and zone
-5. `autonomy_by_zone.png` - mean maternal autonomy score by zone
-6. `mdd_by_autonomy.png` - MDD prevalence by autonomy category
-7. `malnutrition_by_autonomy.png` - wasting and stunting by autonomy category
+3. `mdd_mad_by_zone.png` - MDD and MAD prevalence by zone
+4. `mdd_mad_by_autonomy.png` - MDD and MAD prevalence by autonomy category
+5. `malnutrition_by_autonomy.png` - wasting and stunting by autonomy category
    
 ---
 
@@ -255,10 +346,8 @@ nigeria-dhs-2024/
 └── outputs/
     ├── table1_descriptive.png
     ├── table1_descriptive.html
-    ├── wasting_by_mdd_zone.png
-    ├── stunting_by_mdd_zone.png
-    ├── autonomy_by_zone.png
-    ├── mdd_by_autonomy.png
+    ├── mdd_mad_by_zone.png
+    ├── mdd_mad_by_autonomy.png
     └── malnutrition_by_autonomy.png
 ```
 
