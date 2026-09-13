@@ -200,20 +200,17 @@ Minor differences show the broader sample definition which includes all children
 - Neither autonomy (p=0.827) nor MDD (p=0.409) significantly predicted wasting
   after controlling for covariates. WASH variables were also not significant.
 - Maternal education was protective, children of mothers with incomplete 
-  secondary or higher education had significantly lower odds of wasting compared 
-  to children of mothers with no education (p<0.05). Older children within the 
-  6-23 month window had lower odds of wasting (p<0.001).
-- South South zone had significantly higher wasting odds than North West after 
-  controlling for all covariates (p=0.015)
+secondary or higher education were significantly less likely to be wasted  compared to children of mothers with no education (p<0.05). Older children within the 6-23 month window were significantly less likely to be wasted. (p<0.001).
+- South South zone had significantly higher wasting prevalence than North West after 
+controlling for all covariates (p=0.015)
 
 **Model 3 - Do autonomy, MDD and WASH predict stunting?:**
 - Neither autonomy (p=0.147) nor MDD (p=0.095) significantly predicted stunting
   after controlling for covariates. WASH variables were not significant.
 - Maternal education was strongly protective across multiple levels (p<0.001)
 - Household wealth was protective at the highest quintile (p<0.001)
-- Girls had significantly lower odds of stunting than boys (p<0.001)
-- Child age positively predicted stunting. This is consistent with the 
-  cumulative nature of chronic undernutrition (p<0.001)
+- Girls were significantly less likely to be stunted than boys (p<0.001)
+- Child age positively predicted stunting. This is consistent with the cumulative nature of chronic undernutrition (p<0.001)
 
 **Block 2 - MAD:**
 
