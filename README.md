@@ -1,4 +1,4 @@
-# Maternal Autonomy, Child Dietary Adequacy, and  Malnutrition in Nigeria: A Survey-Weighted Analysis of the 2024 DHS
+# Maternal Autonomy, Child Dietary Diversity, and Malnutrition in Nigeria: A Survey-Weighted Analysis of the 2024 DHS
 
 -----------------------------------------------------------------------------
 
@@ -32,9 +32,7 @@ using nationally representative data.
 4. Do autonomy, MAD and WASH predict wasting and stunting after controlling for
    relevant sociodemographic factors?
 
-**Secondary aim:** To examine the relative contribution of household wealth
-compared to maternal autonomy in predicting child dietary adequacy and malnutrition 
-outcomes in Nigeria.
+**Secondary aim:** To examine the relative contribution of household wealth compared to maternal autonomy in predicting child dietary diversity and malnutrition outcomes in Nigeria.
 
 ---
 
@@ -150,7 +148,7 @@ Six models were estimated in two blocks:
 - Model 6: Do autonomy, MAD and WASH predict stunting?
 
 Using both MDD and MAD allows comparison of whether the autonomy-nutrition 
-pathway holds regardless of how dietary adequacy is measured.
+pathway holds regardless of how dietary indicator is measured.
 
 - **Wasting** - weight-for-height z-score < -2 SD (stored as HW72 < -200 
 in the DHS dataset), primary outcome
@@ -230,7 +228,7 @@ controlling for all covariates (p=0.015)
 
 ## Conclusions
 
-Maternal autonomy did not significantly predict child dietary adequacy or malnutrition 
+Maternal autonomy did not significantly predict child dietary diversity or malnutrition 
 outcomes in any of the six models, regardless of whether MDD or MAD was used as 
 the dietary indicator.
 
@@ -245,7 +243,7 @@ composite captures general household decision-making rather than food-specific a
 
 What I can say with confidence from this analysis is that regardless of a mother's 
 general decision-making power, household wealth is the strongest predictor of whether 
-her child receives a diverse and adequate diet. Economic empowerment alongside autonomy 
+her child receives a diverse diet. Economic empowerment alongside autonomy 
 interventions may be important for improving child nutrition outcomes in Nigeria.
 
 ### A Note on the South South Paradox
@@ -383,5 +381,4 @@ requested directly from dhsprogram.com.
 **Ideraoluwa J. Fasoranti**
 Nutrition and Dietetics Graduate | Independent Researcher
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue)]
-(https://www.linkedin.com/in/ideraoluwa-fasoranti-)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/ideraoluwa-fasoranti-)
